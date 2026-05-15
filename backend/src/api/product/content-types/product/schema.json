@@ -1,0 +1,129 @@
+{
+  "kind": "collectionType",
+  "collectionName": "products",
+  "info": {
+    "singularName": "product",
+    "pluralName": "products",
+    "displayName": "Product",
+    "description": "A Plexonics product with full specifications, media, and document relations"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "modelCode": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true
+    },
+    "domain": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::product-domain.product-domain",
+      "required": true,
+      "inversedBy": "products"
+    },
+    "family": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::product-family.product-family",
+      "required": true,
+      "inversedBy": "products"
+    },
+    "category": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::product-category.product-category",
+      "inversedBy": "products"
+    },
+    "series": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::product-series.product-series",
+      "inversedBy": "products"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["active", "legacy", "discontinued"],
+      "default": "active",
+      "required": true
+    },
+    "shortDescription": {
+      "type": "text"
+    },
+    "longDescription": {
+      "type": "blocks"
+    },
+    "keyFeatures": {
+      "type": "component",
+      "repeatable": true,
+      "component": "product.feature-item"
+    },
+    "specs": {
+      "type": "component",
+      "repeatable": true,
+      "component": "product.spec-item"
+    },
+    "applications": {
+      "type": "blocks"
+    },
+    "compliance": {
+      "type": "json"
+    },
+    "isNDAA": {
+      "type": "boolean",
+      "default": false
+    },
+    "relatedProducts": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::product.product"
+    },
+    "mainImage": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "gallery": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "datasheets": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::document.document",
+      "inversedBy": "datasheetProducts"
+    },
+    "manuals": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::document.document",
+      "inversedBy": "manualProducts"
+    },
+    "software": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::document.document",
+      "inversedBy": "softwareProducts"
+    },
+    "tags": {
+      "type": "json"
+    },
+    "seo": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.seo"
+    }
+  }
+}

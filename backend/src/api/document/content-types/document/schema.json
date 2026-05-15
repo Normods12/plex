@@ -1,0 +1,64 @@
+{
+  "kind": "collectionType",
+  "collectionName": "documents",
+  "info": {
+    "singularName": "document",
+    "pluralName": "documents",
+    "displayName": "Document",
+    "description": "Datasheets, manuals, brochures, software and other downloadable files"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": ["datasheet", "manual", "brochure", "software", "other"],
+      "required": true
+    },
+    "file": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": ["files", "images", "videos", "audios"]
+    },
+    "datasheetProducts": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::product.product",
+      "mappedBy": "datasheets"
+    },
+    "manualProducts": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::product.product",
+      "mappedBy": "manuals"
+    },
+    "softwareProducts": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::product.product",
+      "mappedBy": "software"
+    },
+    "publishedDate": {
+      "type": "date"
+    },
+    "version": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "default": "EN"
+    }
+  }
+}

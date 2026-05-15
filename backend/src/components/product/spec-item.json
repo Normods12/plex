@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_product_spec_items",
+  "info": {
+    "displayName": "Spec Item",
+    "icon": "list",
+    "description": "A single product specification row (label + value)"
+  },
+  "options": {},
+  "attributes": {
+    "label": {
+      "type": "string",
+      "required": true
+    },
+    "value": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

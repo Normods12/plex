@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_product_feature_items",
+  "info": {
+    "displayName": "Feature Item",
+    "icon": "check",
+    "description": "A single product key feature bullet point"
+  },
+  "options": {},
+  "attributes": {
+    "text": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

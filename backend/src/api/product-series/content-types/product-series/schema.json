@@ -1,0 +1,44 @@
+{
+  "kind": "collectionType",
+  "collectionName": "product_series",
+  "info": {
+    "singularName": "product-series",
+    "pluralName": "product-series-list",
+    "displayName": "Product Series",
+    "description": "Product series within a family (e.g. MAXECO under Enterprise Surveillance)"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true
+    },
+    "seriesCode": {
+      "type": "string"
+    },
+    "family": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::product-family.product-family",
+      "inversedBy": "series"
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0
+    },
+    "products": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::product.product",
+      "mappedBy": "series"
+    }
+  }
+}

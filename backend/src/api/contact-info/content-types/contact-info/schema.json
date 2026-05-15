@@ -1,0 +1,31 @@
+{
+  "kind": "singleType",
+  "collectionName": "contact_infos",
+  "info": {
+    "singularName": "contact-info",
+    "pluralName": "contact-infos",
+    "displayName": "Contact Info",
+    "description": "Company contact details displayed site-wide"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "phone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "address": {
+      "type": "text"
+    },
+    "mapEmbed": {
+      "type": "text"
+    },
+    "contactFormTarget": {
+      "type": "string"
+    }
+  }
+}

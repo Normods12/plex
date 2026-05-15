@@ -1,0 +1,29 @@
+{
+  "collectionName": "components_shared_hero_sections",
+  "info": {
+    "displayName": "Hero Section",
+    "icon": "landscape",
+    "description": "Full-width hero banner with headline, subheadline, background image and CTA buttons"
+  },
+  "options": {},
+  "attributes": {
+    "headline": {
+      "type": "string",
+      "required": true
+    },
+    "subheadline": {
+      "type": "text"
+    },
+    "backgroundImage": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "ctaButtons": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.link"
+    }
+  }
+}

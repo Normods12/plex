@@ -1,0 +1,44 @@
+{
+  "kind": "collectionType",
+  "collectionName": "support_articles",
+  "info": {
+    "singularName": "support-article",
+    "pluralName": "support-articles",
+    "displayName": "Support Article",
+    "description": "Glossary entries, technology guides, warranty info, and other support content"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": ["glossary", "technology", "warranty", "registration", "other"],
+      "required": true
+    },
+    "content": {
+      "type": "blocks"
+    },
+    "attachments": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": ["files", "images"]
+    },
+    "seo": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.seo"
+    }
+  }
+}

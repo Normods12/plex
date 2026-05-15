@@ -1,0 +1,67 @@
+{
+  "kind": "collectionType",
+  "collectionName": "product_families",
+  "info": {
+    "singularName": "product-family",
+    "pluralName": "product-families",
+    "displayName": "Product Family",
+    "description": "Product family within a domain (e.g. Switches under Enterprise Networking)"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true
+    },
+    "shortDescription": {
+      "type": "text"
+    },
+    "heroImage": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "domain": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::product-domain.product-domain",
+      "required": true,
+      "inversedBy": "families"
+    },
+    "showInNav": {
+      "type": "boolean",
+      "default": true
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0
+    },
+    "categories": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::product-category.product-category",
+      "mappedBy": "family"
+    },
+    "series": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::product-series.product-series",
+      "mappedBy": "family"
+    },
+    "products": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::product.product",
+      "mappedBy": "family"
+    }
+  }
+}

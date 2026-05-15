@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_shared_alert_banners",
+  "info": {
+    "displayName": "Alert Banner",
+    "icon": "bell",
+    "description": "Site-wide announcement or alert banner"
+  },
+  "options": {},
+  "attributes": {
+    "message": {
+      "type": "text",
+      "required": true
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": ["info", "warning", "promo"],
+      "default": "info"
+    },
+    "active": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}
