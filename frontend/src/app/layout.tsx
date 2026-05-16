@@ -44,19 +44,26 @@ async function getLayoutData() {
       }),
       fetchStrapi<{
         socialLinks?: { linkedin?: string; twitter?: string; youtube?: string };
-      }>('/site-settings'),
+        alertBanner?: { message: string; type: 'info' | 'warning' | 'promo'; active: boolean };
+      }>('/site-settings', {
+        params: { 'populate[alertBanner]': 'true' },
+      }),
     ]);
 
     const domains =
       domainsRes.status === 'fulfilled' ? domainsRes.value.data : [];
-    const siteSettings =
+    const siteSettingsData =
       siteSettingsRes.status === 'fulfilled'
-        ? siteSettingsRes.value.data
+        ? (siteSettingsRes.value.data as any)
         : null;
 
-    return { domains, siteSettings };
+    return {
+      domains,
+      siteSettings: siteSettingsData,
+      alertBanner: siteSettingsData?.alertBanner ?? null,
+    };
   } catch {
-    return { domains: [], siteSettings: null };
+    return { domains: [], siteSettings: null, alertBanner: null };
   }
 }
 
@@ -65,13 +72,14 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { domains, siteSettings } = await getLayoutData();
+  const { domains, siteSettings, alertBanner } = await getLayoutData();
 
   return (
     <html lang="en">
       <body className="min-h-screen flex flex-col font-sans antialiased">
         <Header
           domains={domains as Parameters<typeof Header>[0]['domains']}
+          alertBanner={alertBanner}
         />
         <main className="flex-1">{children}</main>
         <Footer

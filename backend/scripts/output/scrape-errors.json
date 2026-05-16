@@ -1,0 +1,30 @@
+[
+  {
+    "url": "https://www.plexonics.com/index.php/products/enterprise-networking/switches/unmanaged-switches",
+    "error": "Timeout fetching https://www.plexonics.com/index.php/products/enterprise-networking/switches/unmanaged-switches"
+  },
+  {
+    "url": "https://www.plexonics.com/index.php/products/enterprise-networking/routers/vpn-routers",
+    "error": "HTTP 404 for https://www.plexonics.com/index.php/products/enterprise-networking/routers/vpn-routers"
+  },
+  {
+    "url": "https://www.plexonics.com/index.php/products/enterprise-networking/wireless/wireless-controllers/pl-4102wc",
+    "error": "socket hang up"
+  },
+  {
+    "url": "https://www.plexonics.com/index.php/products/enterprise-surveillance/maxview-series/outdoor-bullet-cameras/pl-7273erv-20x",
+    "error": "HTTP 404 for https://www.plexonics.com/index.php/products/enterprise-surveillance/maxview-series/outdoor-bullet-cameras/pl-7273erv-20x"
+  },
+  {
+    "url": "https://www.plexonics.com/index.php/products/enterprise-surveillance/maxvalue-series/outdoor-bullet-cameras/pl-7973rvp",
+    "error": "HTTP 404 for https://www.plexonics.com/index.php/products/enterprise-surveillance/maxvalue-series/outdoor-bullet-cameras/pl-7973rvp"
+  },
+  {
+    "url": "https://www.plexonics.com/index.php/products/video-conference/all-in-one-end-points",
+    "error": "HTTP 404 for https://www.plexonics.com/index.php/products/video-conference/all-in-one-end-points"
+  },
+  {
+    "url": "https://www.plexonics.com/index.php/products/video-conference/enterprise-end-points",
+    "error": "HTTP 404 for https://www.plexonics.com/index.php/products/video-conference/enterprise-end-points"
+  }
+]

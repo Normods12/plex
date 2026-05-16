@@ -8,6 +8,7 @@ interface ContactFormData {
   phone?: string;
   enquiryType: string;
   message: string;
+  captchaToken?: string;
 }
 
 function validateContactForm(data: Partial<ContactFormData>): string | null {
@@ -20,14 +21,49 @@ function validateContactForm(data: Partial<ContactFormData>): string | null {
   return null;
 }
 
+async function verifyCaptcha(token: string): Promise<boolean> {
+  const secret = process.env.HCAPTCHA_SECRET_KEY;
+  // Skip verification in development if no secret is set
+  if (!secret) {
+    console.warn('[/api/contact] HCAPTCHA_SECRET_KEY not set — skipping captcha verification');
+    return true;
+  }
+  // Use the test secret key for the test site key
+  const effectiveSecret =
+    secret === 'test' ? '0x0000000000000000000000000000000000000000' : secret;
+
+  try {
+    const res = await fetch('https://api.hcaptcha.com/siteverify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ secret: effectiveSecret, response: token }).toString(),
+    });
+    const data = (await res.json()) as { success: boolean };
+    return data.success === true;
+  } catch (err) {
+    console.error('[/api/contact] hCaptcha verification error:', err);
+    return false;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as Partial<ContactFormData>;
 
-    // Validate
+    // Validate form fields
     const validationError = validateContactForm(body);
     if (validationError) {
       return NextResponse.json({ error: validationError }, { status: 400 });
+    }
+
+    // Verify hCaptcha token
+    const captchaToken = body.captchaToken;
+    if (!captchaToken) {
+      return NextResponse.json({ error: 'CAPTCHA verification required' }, { status: 400 });
+    }
+    const captchaValid = await verifyCaptcha(captchaToken);
+    if (!captchaValid) {
+      return NextResponse.json({ error: 'CAPTCHA verification failed. Please try again.' }, { status: 400 });
     }
 
     const { name, company, email, phone, enquiryType, message } = body as ContactFormData;
@@ -59,7 +95,7 @@ export async function POST(request: NextRequest) {
               <td style="padding: 8px 0; font-weight: bold; color: #333;">Email:</td>
               <td style="padding: 8px 0; color: #555;"><a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></td>
             </tr>
-            ${phone ? `<tr><td style="padding: 8px 0; font-weight: bold; color: #333;">Phone:</td><td style="padding: 8px 0; color: #555;">${escapeHtml(phone)}</td></tr>` : ''}
+            ${phone ? `<tr><td style="padding: 8px 0; font-weight: bold; color: #555;">${escapeHtml(phone)}</td></tr>` : ''}
             <tr>
               <td style="padding: 8px 0; font-weight: bold; color: #333;">Enquiry Type:</td>
               <td style="padding: 8px 0; color: #555;">${escapeHtml(enquiryType)}</td>
@@ -71,9 +107,7 @@ export async function POST(request: NextRequest) {
           </div>
         </div>
         <div style="padding: 12px 24px; background: #1a1a1a; text-align: center;">
-          <p style="color: #888; font-size: 12px; margin: 0;">
-            Sent from plexonics.com contact form
-          </p>
+          <p style="color: #888; font-size: 12px; margin: 0;">Sent from plexonics.com contact form</p>
         </div>
       </div>
     `;
@@ -84,14 +118,7 @@ export async function POST(request: NextRequest) {
       replyTo: email,
       subject: `[${enquiryType}] Contact form: ${name}`,
       html: emailHtml,
-      text: `
-Name: ${name}
-${company ? `Company: ${company}\n` : ''}Email: ${email}
-${phone ? `Phone: ${phone}\n` : ''}Enquiry Type: ${enquiryType}
-
-Message:
-${message}
-      `.trim(),
+      text: `Name: ${name}\n${company ? `Company: ${company}\n` : ''}Email: ${email}\n${phone ? `Phone: ${phone}\n` : ''}Enquiry Type: ${enquiryType}\n\nMessage:\n${message}`.trim(),
     });
 
     return NextResponse.json({ success: true });

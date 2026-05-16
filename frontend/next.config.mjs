@@ -35,6 +35,17 @@ const nextConfig = {
         destination: '/products/:path*',
         permanent: true,
       },
+      // Legacy Joomla "servers-and-storage" slug → new "servers-storage"
+      {
+        source: '/products/servers-and-storage/:path*',
+        destination: '/products/servers-storage/:path*',
+        permanent: true,
+      },
+      {
+        source: '/index.php/products/servers-and-storage/:path*',
+        destination: '/products/servers-storage/:path*',
+        permanent: true,
+      },
 
       // ── About Us ──────────────────────────────────────────────────────────
       {

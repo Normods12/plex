@@ -256,7 +256,7 @@ export async function getProductBySlug(slug: string): Promise<ProductDetail | nu
   const res = await fetchStrapi<ProductDetail[]>('/products', {
     params: {
       'filters[slug][$eq]': slug,
-      populate: 'deep',
+      populate: '*',
       'pagination[pageSize]': 1,
     },
   });
@@ -264,7 +264,7 @@ export async function getProductBySlug(slug: string): Promise<ProductDetail | nu
 }
 
 export async function getSeriesByFamily(familySlug: string): Promise<ProductSeries[]> {
-  const res = await fetchStrapi<ProductSeries[]>('/product-series', {
+  const res = await fetchStrapi<ProductSeries[]>('/product-series-list', {
     params: {
       'filters[family][slug][$eq]': familySlug,
       'sort[0]': 'sortOrder:asc',

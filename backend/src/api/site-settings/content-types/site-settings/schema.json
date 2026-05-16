@@ -36,6 +36,11 @@
     "socialLinks": {
       "type": "json"
     },
+    "alertBanner": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.alert-banner"
+    },
     "defaultSeo": {
       "type": "component",
       "repeatable": false,

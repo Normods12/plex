@@ -136,14 +136,21 @@ export function Header({ domains = [], alertBanner }: HeaderProps) {
               <NavLink href="/contact">Contact Us</NavLink>
             </div>
 
-            {/* Phone + hamburger */}
+            {/* Phone + Button + hamburger */}
             <div className="flex items-center space-x-4">
               <a
                 href="tel:18001200023"
-                className="hidden lg:block text-sm font-bold text-ui-charcoal hover:text-brand-red transition-colors"
+                className="hidden xl:block text-sm font-bold text-ui-charcoal hover:text-brand-red transition-colors"
               >
                 1800-1200-023
               </a>
+
+              <Link
+                href="/contact"
+                className="hidden md:inline-flex items-center justify-center px-5 py-2 text-sm font-bold bg-brand-red text-white rounded-sm hover:bg-brand-darkRed transition-colors"
+              >
+                Get in Touch
+              </Link>
 
               {/* Hamburger */}
               <button

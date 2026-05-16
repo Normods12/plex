@@ -3,6 +3,10 @@
 const path = require('path');
 const envPath = path.join(__dirname, '..', '.env');
 
+// IMPORTANT: Change working directory to the backend folder
+// This ensures Strapi 5 finds the local public/uploads directory correctly
+process.chdir(__dirname);
+
 // Set ENV_PATH so Strapi's internal dotenv.config() also finds the root .env
 process.env.ENV_PATH = envPath;
 

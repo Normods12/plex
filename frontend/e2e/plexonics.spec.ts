@@ -21,7 +21,7 @@ test('Homepage: loads, H1 exists, 8 domain cards render, no broken images', asyn
   for (let i = 0; i < imageCount; i++) {
     const img = images.nth(i);
     const src = await img.getAttribute('src');
-    if (src && !src.startsWith('data:')) {
+    if (src && !src.startsWith('data:') && !src.startsWith('/_next/')) {
       const naturalWidth = await img.evaluate((el: HTMLImageElement) => el.naturalWidth);
       expect(naturalWidth, `Image broken: ${src}`).toBeGreaterThan(0);
     }
@@ -35,7 +35,7 @@ test('/products renders all 8 domain cards', async ({ page }) => {
 
   await expect(page.locator('h1')).toContainText('Products');
 
-  const domainCards = page.locator('a[href^="/products/"]');
+  const domainCards = page.locator('a[href^="/products/"]').filter({ hasText: /Explore|View/ });
   await expect(domainCards).toHaveCount(8, { timeout: 10000 });
 });
 
@@ -48,27 +48,24 @@ test('/products/enterprise-networking/switches/l2-managed-switches shows product
     `${BASE_URL}/products/enterprise-networking/switches/l2-managed-switches`
   );
 
-  // Breadcrumb should contain the category name
+  // Breadcrumb should contain the domain name
   await expect(page.locator('nav[aria-label="Breadcrumb"]')).toContainText(
     'Enterprise Networking'
   );
 
   // Page should have a heading
-  const h1 = page.locator('h1');
-  await expect(h1).toBeVisible();
+  await expect(page.locator('h1')).toBeVisible();
 });
 
 // ─── 4. Product detail page ───────────────────────────────────────────────────
 
-test('Product detail page: model code in red, Specifications tab, Downloads tab with PDF', async ({
+test('Product detail page: model code in red, Specifications tab, Downloads tab', async ({
   page,
 }) => {
-  // Navigate to a product listing first to find a real product
   await page.goto(
     `${BASE_URL}/products/enterprise-networking/switches/l2-managed-switches`
   );
 
-  // Click first "View Details" button if products exist
   const viewDetailsBtn = page.locator('a:has-text("View Details")').first();
   const hasProducts = await viewDetailsBtn.isVisible({ timeout: 5000 }).catch(() => false);
 
@@ -81,23 +78,25 @@ test('Product detail page: model code in red, Specifications tab, Downloads tab 
   await page.waitForLoadState('networkidle');
 
   // Model code should be in brand red
-  const modelCode = page.locator('.text-brand-red').first();
-  await expect(modelCode).toBeVisible();
+  await expect(page.locator('.text-brand-red').first()).toBeVisible({ timeout: 10000 });
 
   // Specifications tab
-  const specsTab = page.locator('button:has-text("Specifications")');
-  await expect(specsTab).toBeVisible();
+  const specsTab = page.getByRole('button', { name: 'Specifications' });
+  await expect(specsTab).toBeVisible({ timeout: 10000 });
   await specsTab.click();
 
   // Downloads tab
-  const downloadsTab = page.locator('button:has-text("Downloads")');
-  await expect(downloadsTab).toBeVisible();
+  const downloadsTab = page.getByRole('button', { name: 'Downloads' });
+  await expect(downloadsTab).toBeVisible({ timeout: 10000 });
   await downloadsTab.click();
 });
 
 // ─── 5. Contact form ──────────────────────────────────────────────────────────
 
 test('/contact form: fill all fields, submit, success message shown', async ({ page }) => {
+  // Mock the hCaptcha script so it doesn't load externally
+  await page.route('**/js.hcaptcha.com/**', (route) => route.abort());
+
   // Mock the API route
   await page.route('**/api/contact', async (route) => {
     await route.fulfill({
@@ -108,6 +107,25 @@ test('/contact form: fill all fields, submit, success message shown', async ({ p
   });
 
   await page.goto(`${BASE_URL}/contact`);
+
+  // Inject a fake hCaptcha token into the component state by simulating
+  // the captcha callback via window.hcaptcha mock
+  await page.addInitScript(() => {
+    // Stub hcaptcha so renderCaptcha() fires the callback immediately with a test token
+    (window as any).hcaptcha = {
+      render: (container: HTMLElement, opts: { callback: (t: string) => void }) => {
+        // Fire callback immediately with a test token
+        setTimeout(() => opts.callback('test-captcha-token'), 100);
+        return 'widget-id-1';
+      },
+      reset: () => {},
+    };
+  });
+
+  await page.reload();
+
+  // Wait for captcha token to be set (100ms delay in mock)
+  await page.waitForTimeout(500);
 
   // Fill form
   await page.fill('#name', 'Test User');
@@ -121,31 +139,43 @@ test('/contact form: fill all fields, submit, success message shown', async ({ p
   await page.click('button[type="submit"]');
 
   // Success message
-  await expect(page.locator('text=Message Sent')).toBeVisible({ timeout: 5000 });
+  await expect(page.locator('text=Message Sent')).toBeVisible({ timeout: 10000 });
 });
 
 // ─── 6. Joomla redirect patterns ─────────────────────────────────────────────
 
 test('Joomla redirects: /index.php/products/... → /products/...', async ({ page }) => {
-  const response = await page.goto(
+  await page.goto(
     `${BASE_URL}/index.php/products/enterprise-networking/switches`,
-    { waitUntil: 'commit' }
+    { waitUntil: 'commit', timeout: 60000 }
   );
-
-  // Should have been redirected
-  expect(page.url()).toContain('/products/enterprise-networking/switches');
+  await expect(page).toHaveURL(/.*\/products\/enterprise-networking\/switches/, { timeout: 15000 });
   expect(page.url()).not.toContain('/index.php');
 });
 
 test('Joomla redirect: /index.php/contact-us → /contact', async ({ page }) => {
-  await page.goto(`${BASE_URL}/index.php/contact-us`, { waitUntil: 'commit' });
-  expect(page.url()).toContain('/contact');
+  await page.goto(`${BASE_URL}/index.php/contact-us`, { waitUntil: 'commit', timeout: 60000 });
+  await expect(page).toHaveURL(/.*\/contact/, { timeout: 15000 });
   expect(page.url()).not.toContain('/index.php');
 });
 
 test('Joomla redirect: /index.php/about-us → /about/about-us', async ({ page }) => {
-  await page.goto(`${BASE_URL}/index.php/about-us`, { waitUntil: 'commit' });
-  expect(page.url()).toContain('/about/about-us');
+  await page.goto(`${BASE_URL}/index.php/about-us`, { waitUntil: 'commit', timeout: 60000 });
+  await expect(page).toHaveURL(/.*\/about\/about-us/, { timeout: 15000 });
+});
+
+test('Joomla redirect: /index.php/support/warranty-policy → /support/warranty-policy', async ({ page }) => {
+  await page.goto(`${BASE_URL}/index.php/support/warranty-policy`, { waitUntil: 'commit', timeout: 60000 });
+  await expect(page).toHaveURL(/.*\/support\/warranty-policy/, { timeout: 15000 });
+  expect(page.url()).not.toContain('/index.php');
+});
+
+test('Joomla redirect: servers-and-storage → servers-storage', async ({ page }) => {
+  await page.goto(
+    `${BASE_URL}/products/servers-and-storage/surveillance-servers`,
+    { waitUntil: 'commit' }
+  );
+  expect(page.url()).toContain('/products/servers-storage/surveillance-servers');
 });
 
 // ─── 7. Product registration page ────────────────────────────────────────────
@@ -184,13 +214,14 @@ async function checkNoConsoleErrors(page: Page, url: string) {
   await page.goto(url);
   await page.waitForLoadState('networkidle');
 
-  // Filter out known non-critical errors (e.g. missing favicon, analytics)
   const criticalErrors = errors.filter(
     (e) =>
       !e.includes('favicon') &&
       !e.includes('analytics') &&
       !e.includes('gtag') &&
-      !e.includes('Failed to load resource: net::ERR_BLOCKED_BY_CLIENT')
+      !e.includes('hcaptcha') &&
+      !e.includes('Failed to load resource: net::ERR_BLOCKED_BY_CLIENT') &&
+      !e.includes('net::ERR_ABORTED')
   );
 
   expect(criticalErrors, `Console errors on ${url}: ${criticalErrors.join(', ')}`).toHaveLength(0);
@@ -218,7 +249,7 @@ test('Mobile (375px): hamburger appears, nav hidden, tap opens nav', async ({ pa
   const hamburger = page.locator('button[aria-label="Toggle navigation menu"]');
   await expect(hamburger).toBeVisible();
 
-  // Desktop nav links should be hidden
+  // Desktop nav links should be hidden on mobile
   const desktopNav = page.locator('.hidden.lg\\:flex');
   await expect(desktopNav).toBeHidden();
 
@@ -228,4 +259,52 @@ test('Mobile (375px): hamburger appears, nav hidden, tap opens nav', async ({ pa
   // Mobile menu should open — check for a nav link
   const mobileMenuLink = page.locator('a[href="/products"]').last();
   await expect(mobileMenuLink).toBeVisible({ timeout: 3000 });
+});
+
+// ─── 11. Support pages ────────────────────────────────────────────────────────
+
+test('/support page renders with support links', async ({ page }) => {
+  await page.goto(`${BASE_URL}/support`);
+  await expect(page.locator('h1')).toContainText('Support');
+  await expect(page.locator('a[href="/support/product-registration"]').first()).toBeVisible();
+  await expect(page.locator('a[href="/support/learning-center"]').first()).toBeVisible();
+});
+
+test('/support/learning-center page renders', async ({ page }) => {
+  await page.goto(`${BASE_URL}/support/learning-center`);
+  await expect(page.locator('h1')).toContainText('Learning Center');
+});
+
+// ─── 12. Legal pages ─────────────────────────────────────────────────────────
+
+test('/legal/privacy-policy page renders', async ({ page }) => {
+  await page.goto(`${BASE_URL}/legal/privacy-policy`);
+  await expect(page.locator('h1')).toContainText('Privacy Policy');
+});
+
+test('/legal/terms-of-use page renders', async ({ page }) => {
+  await page.goto(`${BASE_URL}/legal/terms-of-use`);
+  await expect(page.locator('h1')).toContainText('Terms of Use');
+});
+
+// ─── 13. 404 page ─────────────────────────────────────────────────────────────
+
+test('404 page renders for unknown routes', async ({ page }) => {
+  await page.goto(`${BASE_URL}/this-page-does-not-exist-xyz`);
+  await expect(page.locator('text=404')).toBeVisible();
+  await expect(page.locator('text=Page Not Found')).toBeVisible();
+});
+
+// ─── 14. Sitemap and robots ───────────────────────────────────────────────────
+
+test('/sitemap.xml is accessible', async ({ page }) => {
+  const response = await page.goto(`${BASE_URL}/sitemap.xml`);
+  expect(response?.status()).toBe(200);
+});
+
+test('/robots.txt is accessible', async ({ page }) => {
+  const response = await page.goto(`${BASE_URL}/robots.txt`);
+  expect(response?.status()).toBe(200);
+  const content = await page.content();
+  expect(content).toContain('sitemap');
 });

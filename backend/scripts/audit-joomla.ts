@@ -36,7 +36,7 @@ interface AuditOutput {
 // ─── Config ────────────────────────────────────────────────────────────────────
 
 const BASE_URL = 'https://www.plexonics.com';
-const RATE_LIMIT_MS = 1000; // 1 request per second
+const RATE_LIMIT_MS = 200; // 5 requests per second
 const OUTPUT_DIR = path.join(__dirname, 'output');
 const AUDIT_FILE = path.join(OUTPUT_DIR, 'joomla-audit.json');
 const CSV_FILE = path.join(OUTPUT_DIR, 'pdf-links.csv');
@@ -210,6 +210,7 @@ async function discoverProductUrls(): Promise<string[]> {
     console.warn('  Could not fetch homepage:', err);
   }
 
+  console.log(`  Discovered ${productUrls.size} total potential product URLs`);
   return Array.from(productUrls);
 }
 
@@ -258,22 +259,28 @@ async function main() {
   const products: ProductEntry[] = [];
   const errors: Array<{ url: string; error: string }> = [];
 
-  for (let i = 0; i < productUrls.length; i++) {
-    const url = productUrls[i];
-    console.log(`[${i + 1}/${productUrls.length}] Scraping: ${url}`);
+  const BATCH_SIZE = 5;
+  for (let i = 0; i < productUrls.length; i += BATCH_SIZE) {
+    const batch = productUrls.slice(i, i + BATCH_SIZE);
+    console.log(`[${i + 1}-${Math.min(i + BATCH_SIZE, productUrls.length)}/${productUrls.length}] Scraping batch...`);
 
-    try {
-      const product = await scrapeProductPage(url);
-      products.push(product);
-      console.log(`  ✓ ${product.name || '(no title)'} — ${product.pdfLinks.length} PDFs, ${product.imageLinks.length} images`);
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
-      console.warn(`  ✗ Error: ${errorMsg}`);
-      errors.push({ url, error: errorMsg });
-    }
+    const results = await Promise.allSettled(batch.map(url => scrapeProductPage(url)));
 
-    // Rate limiting
-    if (i < productUrls.length - 1) {
+    results.forEach((result, idx) => {
+      const url = batch[idx];
+      if (result.status === 'fulfilled') {
+        const product = result.value;
+        products.push(product);
+        console.log(`  ✓ ${product.name || '(no title)'} — ${product.pdfLinks.length} PDFs, ${product.imageLinks.length} images`);
+      } else {
+        const errorMsg = result.reason instanceof Error ? result.reason.message : String(result.reason);
+        console.warn(`  ✗ Error for ${url}: ${errorMsg}`);
+        errors.push({ url, error: errorMsg });
+      }
+    });
+
+    // Rate limiting between batches
+    if (i + BATCH_SIZE < productUrls.length) {
       await sleep(RATE_LIMIT_MS);
     }
   }

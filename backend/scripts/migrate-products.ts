@@ -51,7 +51,7 @@ const URL_DOMAIN_MAP: Record<string, string> = {
   'video-conference': 'video-conference',
   'servers-storage': 'servers-storage',
   'enterprise-software': 'enterprise-software',
-  // Joomla URL segment aliases
+  // Joomla URL segment aliases (live site uses different slugs in some cases)
   'networking': 'enterprise-networking',
   'surveillance': 'enterprise-surveillance',
   'displays': 'professional-displays',
@@ -60,6 +60,32 @@ const URL_DOMAIN_MAP: Record<string, string> = {
   'video-conferencing': 'video-conference',
   'servers': 'servers-storage',
   'software': 'enterprise-software',
+  // Live Joomla site uses "servers-and-storage" in URLs
+  'servers-and-storage': 'servers-storage',
+};
+
+// Map live Joomla family URL slugs → our Strapi family slugs
+const URL_FAMILY_MAP: Record<string, string> = {
+  // Enterprise Surveillance — live uses "cameras-accessories"
+  'cameras-accessories': 'camera-accessories',
+  // Enterprise Software — live uses full names
+  'software-defined-wan': 'software-defined-wan',
+  'ai-based-video-analytics': 'ai-based-video-analytics',
+  'cloud-video-conference-system': 'cloud-video-conference-system',
+  'cloud-public-addressing-system': 'cloud-public-addressing-system',
+  // Servers — live uses "network-attached-storage" (same), "local-processing-units" (same)
+  // Video Conference — live uses "all-in-one-ptz-cameras" (same)
+};
+
+// Map live Joomla category URL slugs → our Strapi category slugs
+const URL_CATEGORY_MAP: Record<string, string> = {
+  // Industrial switches — live uses these exact slugs
+  'l2-managed-industrial-switches': 'l2-managed-industrial-switches',
+  'l3-managed-industrial-switches': 'l3-managed-industrial-switches',
+  'industrial-power-supply': 'industrial-power-supply',
+  // Industrial cameras
+  'corrosion-proof-cameras': 'corrosion-proof-cameras',
+  'industrial-cameras-accessories': 'industrial-cameras-accessories',
 };
 
 function extractTaxonomyFromUrl(url: string): {
@@ -80,11 +106,13 @@ function extractTaxonomyFromUrl(url: string): {
   const categorySegment = segments[2] ?? '';
 
   const domainSlug = URL_DOMAIN_MAP[domainSegment] ?? domainSegment;
+  const familySlug = URL_FAMILY_MAP[familySegment] ?? familySegment;
+  const categorySlug = URL_CATEGORY_MAP[categorySegment] ?? categorySegment;
 
   return {
     domainSlug,
-    familySlug: familySegment,
-    categorySlug: categorySegment,
+    familySlug,
+    categorySlug,
   };
 }
 

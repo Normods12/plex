@@ -1,20 +1,22 @@
-import { parse } from 'pg-connection-string';
-
 export default ({ env }: { env: (key: string, defaultValue?: string) => string }) => {
   const databaseUrl = env('DATABASE_URL', '');
 
   if (databaseUrl) {
-    const { host, port, database, user, password } = parse(databaseUrl);
+    // Parse DATABASE_URL using the built-in URL API (no external dependency needed)
+    const parsed = new URL(databaseUrl);
     return {
       connection: {
         client: 'postgres',
         connection: {
-          host: host || 'localhost',
-          port: Number(port) || 5432,
-          database: database || 'plexonics',
-          user: user || 'postgres',
-          password: password || '',
-          ssl: env('DATABASE_SSL', 'false') === 'true' ? { rejectUnauthorized: false } : false,
+          host: parsed.hostname || 'localhost',
+          port: Number(parsed.port) || 5432,
+          database: parsed.pathname.replace(/^\//, '') || 'plexonics',
+          user: parsed.username || 'postgres',
+          password: decodeURIComponent(parsed.password) || '',
+          ssl:
+            env('DATABASE_SSL', 'false') === 'true'
+              ? { rejectUnauthorized: false }
+              : false,
         },
         debug: false,
       },

@@ -37,6 +37,7 @@ export default async function FamilyPage({ params }: Props) {
   ]);
 
   if (!family) notFound();
+  const fam = family!;
 
   const hasSeries = series.length > 0;
 
@@ -57,12 +58,12 @@ export default async function FamilyPage({ params }: Props) {
               {domain?.attributes.name ?? params.domainSlug}
             </Link>
             <span className="mx-2">›</span>
-            <span className="text-white">{family.attributes.name}</span>
+            <span className="text-white">{fam.attributes.name}</span>
           </nav>
-          <h1 className="text-4xl font-bold text-white">{family.attributes.name}</h1>
-          {family.attributes.shortDescription && (
+          <h1 className="text-4xl font-bold text-white">{fam.attributes.name}</h1>
+          {fam.attributes.shortDescription && (
             <p className="text-gray-300 mt-2 max-w-2xl">
-              {family.attributes.shortDescription}
+              {fam.attributes.shortDescription}
             </p>
           )}
         </div>

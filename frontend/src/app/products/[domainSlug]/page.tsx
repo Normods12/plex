@@ -35,6 +35,7 @@ export default async function DomainPage({ params }: Props) {
   ]);
 
   if (!domain) notFound();
+  const d = domain!;
 
   return (
     <div>
@@ -46,12 +47,12 @@ export default async function DomainPage({ params }: Props) {
             <span className="mx-2">›</span>
             <Link href="/products" className="hover:text-white transition-colors">Products</Link>
             <span className="mx-2">›</span>
-            <span className="text-white">{domain.attributes.name}</span>
+            <span className="text-white">{d.attributes.name}</span>
           </nav>
-          <h1 className="text-4xl font-bold text-white">{domain.attributes.name}</h1>
-          {domain.attributes.shortDescription && (
+          <h1 className="text-4xl font-bold text-white">{d.attributes.name}</h1>
+          {d.attributes.shortDescription && (
             <p className="text-gray-300 mt-2 max-w-2xl">
-              {domain.attributes.shortDescription}
+              {d.attributes.shortDescription}
             </p>
           )}
         </div>

@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import Script from 'next/script';
 import { Button } from '@/components/ui/Button';
 
 type EnquiryType = 'General' | 'Support' | 'Partnership' | 'Careers';
@@ -17,6 +18,11 @@ interface FormState {
 
 const ENQUIRY_TYPES: EnquiryType[] = ['General', 'Support', 'Partnership', 'Careers'];
 
+// hCaptcha site key — set NEXT_PUBLIC_HCAPTCHA_SITE_KEY in .env.local
+// Use "10000000-ffff-ffff-ffff-000000000001" for local testing
+const HCAPTCHA_SITE_KEY =
+  process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || '10000000-ffff-ffff-ffff-000000000001';
+
 export default function ContactPage() {
   const [form, setForm] = useState<FormState>({
     name: '',
@@ -28,6 +34,9 @@ export default function ContactPage() {
   });
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaContainerRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -35,8 +44,30 @@ export default function ContactPage() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  // Render hCaptcha widget once the script loads
+  const renderCaptcha = useCallback(() => {
+    if (
+      captchaContainerRef.current &&
+      widgetIdRef.current === null &&
+      typeof (window as any).hcaptcha !== 'undefined'
+    ) {
+      widgetIdRef.current = (window as any).hcaptcha.render(captchaContainerRef.current, {
+        sitekey: HCAPTCHA_SITE_KEY,
+        callback: (token: string) => setCaptchaToken(token),
+        'expired-callback': () => setCaptchaToken(null),
+        'error-callback': () => setCaptchaToken(null),
+        theme: 'light',
+      });
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!captchaToken) {
+      setStatus('error');
+      setErrorMessage('Please complete the CAPTCHA verification.');
+      return;
+    }
     setStatus('submitting');
     setErrorMessage('');
 
@@ -44,7 +75,7 @@ export default function ContactPage() {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, captchaToken }),
       });
 
       if (!res.ok) {
@@ -54,6 +85,11 @@ export default function ContactPage() {
 
       setStatus('success');
       setForm({ name: '', company: '', email: '', phone: '', enquiryType: '', message: '' });
+      setCaptchaToken(null);
+      // Reset hCaptcha widget
+      if (widgetIdRef.current !== null && typeof (window as any).hcaptcha !== 'undefined') {
+        (window as any).hcaptcha.reset(widgetIdRef.current);
+      }
     } catch (err) {
       setStatus('error');
       setErrorMessage(
@@ -123,7 +159,8 @@ export default function ContactPage() {
               >
                 <span className="text-ui-charcoal text-sm">
                   Plexonics Technologies Limited<br />
-                  India
+                  181/23, First Floor, Industrial Area Phase I,<br />
+                  Chandigarh - 160002, India
                 </span>
               </ContactInfoItem>
             </div>
@@ -237,9 +274,14 @@ export default function ContactPage() {
                   />
                 </div>
 
-                {/* hCaptcha placeholder */}
-                <div className="bg-ui-lightGray border border-ui-border rounded-sm p-3 text-xs text-gray-500">
-                  hCaptcha will be rendered here. Add your site key to enable spam protection.
+                {/* hCaptcha widget */}
+                <div>
+                  <Script
+                    src="https://js.hcaptcha.com/1/api.js?render=explicit"
+                    strategy="lazyOnload"
+                    onLoad={renderCaptcha}
+                  />
+                  <div ref={captchaContainerRef} />
                 </div>
 
                 {status === 'error' && (

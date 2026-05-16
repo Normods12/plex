@@ -85,39 +85,63 @@ export async function fetchStrapi<T>(
 }
 
 /**
- * Recursively transforms a Strapi 5 flattened object/array back into 
- * a Strapi 4 nested "attributes" structure.
+ * Recursively transforms a Strapi 5 flattened object/array back into
+ * a Strapi 4 nested "attributes" structure for backward compatibility.
+ *
+ * Strapi 5 returns: { id: 1, name: "foo", relation: { id: 2, title: "bar" } }
+ * Strapi 4 returns: { id: 1, attributes: { name: "foo", relation: { data: { id: 2, attributes: { title: "bar" } } } } }
+ *
+ * This transformer converts Strapi 5 → Strapi 4 shape so all existing
+ * component code that reads `.attributes.*` continues to work.
  */
 function transformStrapi5To4(data: any): any {
   if (data === null || data === undefined) return data;
 
+  // Arrays: transform each element
   if (Array.isArray(data)) {
     return data.map(transformStrapi5To4);
   }
 
   if (typeof data === 'object') {
-    // If it's already in V4 format or doesn't have an ID, just recurse on values
-    if (data.attributes || !data.id) {
-      const transformed: any = {};
-      for (const key in data) {
-        transformed[key] = transformStrapi5To4(data[key]);
+    // Already in V4 format (has .attributes) — recurse into values only
+    if ('attributes' in data && data.attributes !== null && typeof data.attributes === 'object') {
+      const result: any = { id: data.id };
+      if (data.documentId !== undefined) result.documentId = data.documentId;
+      result.attributes = {};
+      for (const key in data.attributes) {
+        result.attributes[key] = transformStrapi5To4(data.attributes[key]);
       }
-      return transformed;
+      return result;
     }
 
-    // It's a Strapi 5 flattened object: { id, ...fields }
-    const { id, documentId, ...fields } = data;
-    const attributes: any = {};
-    
-    for (const key in fields) {
-      attributes[key] = transformStrapi5To4(fields[key]);
+    // Has an id — it's a Strapi 5 entity: lift fields into .attributes
+    if ('id' in data) {
+      const { id, documentId, ...fields } = data;
+      const attributes: any = {};
+      for (const key in fields) {
+        const val = fields[key];
+        // Nested relation: single object with id → wrap in { data: ... }
+        // Nested relation: array of objects with id → wrap in { data: [...] }
+        if (val !== null && typeof val === 'object' && !Array.isArray(val) && 'id' in val) {
+          attributes[key] = { data: transformStrapi5To4(val) };
+        } else if (Array.isArray(val) && val.length > 0 && val[0] !== null && typeof val[0] === 'object' && 'id' in val[0]) {
+          attributes[key] = { data: val.map(transformStrapi5To4) };
+        } else {
+          attributes[key] = transformStrapi5To4(val);
+        }
+      }
+      const result: any = { id };
+      if (documentId !== undefined) result.documentId = documentId;
+      result.attributes = attributes;
+      return result;
     }
 
-    return {
-      id,
-      documentId, // Keep documentId if present
-      attributes,
-    };
+    // Plain object (no id) — recurse into values
+    const result: any = {};
+    for (const key in data) {
+      result[key] = transformStrapi5To4(data[key]);
+    }
+    return result;
   }
 
   return data;

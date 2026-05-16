@@ -115,13 +115,14 @@ function HeroSection() {
             Plexonics delivers reliable, high-performance networking, surveillance, display, and industrial solutions trusted by enterprises across India.
           </p>
           <div className="flex flex-wrap gap-4">
-            <Button href="/products" variant="outline" size="lg">
+            <Button href="/products" variant="outline" size="lg" className="bg-transparent text-white border-white hover:bg-white hover:text-brand-red">
               Explore Products
             </Button>
             <Button
               href="/contact"
               size="lg"
-              className="bg-white text-brand-red hover:bg-gray-100 border-white"
+              variant="outline"
+              className="bg-white text-brand-red border-white hover:bg-gray-100"
             >
               Get in Touch
             </Button>
@@ -305,7 +306,7 @@ function SolutionCallout() {
           From small offices to large enterprise deployments — Plexonics has the right solution for your infrastructure needs.
         </p>
         <Button href="/contact" size="lg">
-          Talk to an Expert
+          Get in Touch
         </Button>
       </div>
     </section>
