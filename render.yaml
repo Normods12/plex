@@ -46,7 +46,7 @@ services:
         fromService:
           type: web
           name: plexonics-backend
-          property: host
+          property: url
       # The following must be manually configured in the Render Dashboard after deployment:
       - key: STRAPI_API_TOKEN
         sync: false
