@@ -43,10 +43,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: NEXT_PUBLIC_STRAPI_URL
-        fromService:
-          type: web
-          name: plexonics-backend
-          property: url
+        sync: false
       # The following must be manually configured in the Render Dashboard after deployment:
       - key: STRAPI_API_TOKEN
         sync: false
