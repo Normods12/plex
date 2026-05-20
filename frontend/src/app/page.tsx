@@ -115,17 +115,18 @@ function HeroSection() {
             Plexonics delivers reliable, high-performance networking, surveillance, display, and industrial solutions trusted by enterprises across India.
           </p>
           <div className="flex flex-wrap gap-4">
-            <Button href="/products" variant="outline" size="lg" className="bg-transparent text-white border-white hover:bg-white hover:text-brand-red">
+            <Link
+              href="/products"
+              className="inline-flex items-center justify-center font-bold font-sans rounded-sm transition-colors duration-200 px-8 py-4 text-base border border-white bg-transparent text-white hover:bg-white hover:text-brand-red focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white"
+            >
               Explore Products
-            </Button>
-            <Button
+            </Link>
+            <Link
               href="/contact"
-              size="lg"
-              variant="outline"
-              className="bg-white text-brand-red border-white hover:bg-gray-100"
+              className="inline-flex items-center justify-center font-bold font-sans rounded-sm transition-colors duration-200 px-8 py-4 text-base border border-white bg-white text-brand-red hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white"
             >
               Get in Touch
-            </Button>
+            </Link>
           </div>
         </div>
       </div>
