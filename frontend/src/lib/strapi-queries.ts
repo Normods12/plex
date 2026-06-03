@@ -260,7 +260,7 @@ export async function getProductBySlug(slug: string): Promise<ProductDetail | nu
       'pagination[pageSize]': 1,
     },
   });
-  return res.data[0] ?? null;
+  return res.data?.[0] ?? null;
 }
 
 export async function getSeriesByFamily(familySlug: string): Promise<ProductSeries[]> {
@@ -277,71 +277,91 @@ export async function getSeriesByFamily(familySlug: string): Promise<ProductSeri
 // Static params helpers for generateStaticParams
 
 export async function getAllDomainSlugs(): Promise<string[]> {
-  const domains = await getAllDomains();
-  return domains.map((d) => d.attributes.slug);
+  try {
+    const domains = await getAllDomains();
+    return domains.map((d) => d.attributes.slug);
+  } catch (e) {
+    console.warn("Skipping domain static generation due to API error:", e);
+    return [];
+  }
 }
 
 export async function getAllFamilySlugs(): Promise<Array<{ domainSlug: string; familySlug: string }>> {
-  const res = await fetchStrapi<ProductFamily[]>('/product-families', {
-    params: {
-      'populate[domain][fields][0]': 'slug',
-      'pagination[pageSize]': 200,
-    },
-  });
-  return res.data
-    .filter((f) => f.attributes.domain?.data)
-    .map((f) => ({
-      domainSlug: f.attributes.domain!.data.attributes.slug,
-      familySlug: f.attributes.slug,
-    }));
+  try {
+    const res = await fetchStrapi<ProductFamily[]>('/product-families', {
+      params: {
+        'populate[domain][fields][0]': 'slug',
+        'pagination[pageSize]': 200,
+      },
+    });
+    return (res.data || [])
+      .filter((f) => f.attributes.domain?.data)
+      .map((f) => ({
+        domainSlug: f.attributes.domain!.data.attributes.slug,
+        familySlug: f.attributes.slug,
+      }));
+  } catch (e) {
+    console.warn("Skipping family static generation due to API error:", e);
+    return [];
+  }
 }
 
 export async function getAllCategorySlugs(): Promise<
   Array<{ domainSlug: string; familySlug: string; categorySlug: string }>
 > {
-  const res = await fetchStrapi<ProductCategory[]>('/product-categories', {
-    params: {
-      'populate[family][populate][domain][fields][0]': 'slug',
-      'populate[family][fields][0]': 'slug',
-      'pagination[pageSize]': 500,
-    },
-  });
-  return res.data
-    .filter((c) => c.attributes.family?.data)
-    .map((c) => ({
-      domainSlug:
-        (c.attributes.family as unknown as {
-          data: { attributes: { domain?: { data?: { attributes: { slug: string } } }; slug: string } };
-        }).data.attributes.domain?.data?.attributes.slug ?? '',
-      familySlug: c.attributes.family!.data.attributes.slug,
-      categorySlug: c.attributes.slug,
-    }))
-    .filter((c) => c.domainSlug);
+  try {
+    const res = await fetchStrapi<ProductCategory[]>('/product-categories', {
+      params: {
+        'populate[family][populate][domain][fields][0]': 'slug',
+        'populate[family][fields][0]': 'slug',
+        'pagination[pageSize]': 500,
+      },
+    });
+    return (res.data || [])
+      .filter((c) => c.attributes.family?.data)
+      .map((c) => ({
+        domainSlug:
+          (c.attributes.family as unknown as {
+            data: { attributes: { domain?: { data?: { attributes: { slug: string } } }; slug: string } };
+          }).data.attributes.domain?.data?.attributes.slug ?? '',
+        familySlug: c.attributes.family!.data.attributes.slug,
+        categorySlug: c.attributes.slug,
+      }))
+      .filter((c) => c.domainSlug);
+  } catch (e) {
+    console.warn("Skipping category static generation due to API error:", e);
+    return [];
+  }
 }
 
 export async function getAllProductSlugs(): Promise<
   Array<{ domainSlug: string; familySlug: string; categorySlug: string; productSlug: string }>
 > {
-  const res = await fetchStrapi<ProductListItem[]>('/products', {
-    params: {
-      'populate[domain][fields][0]': 'slug',
-      'populate[family][fields][0]': 'slug',
-      'populate[category][fields][0]': 'slug',
-      'fields[0]': 'slug',
-      'pagination[pageSize]': 1000,
-    },
-  });
-  return res.data
-    .filter(
-      (p) =>
-        p.attributes.domain?.data &&
-        p.attributes.family?.data &&
-        p.attributes.category?.data
-    )
-    .map((p) => ({
-      domainSlug: p.attributes.domain!.data.attributes.slug,
-      familySlug: p.attributes.family!.data.attributes.slug,
-      categorySlug: p.attributes.category!.data.attributes.slug,
-      productSlug: p.attributes.slug,
-    }));
+  try {
+    const res = await fetchStrapi<ProductListItem[]>('/products', {
+      params: {
+        'populate[domain][fields][0]': 'slug',
+        'populate[family][fields][0]': 'slug',
+        'populate[category][fields][0]': 'slug',
+        'fields[0]': 'slug',
+        'pagination[pageSize]': 1000,
+      },
+    });
+    return (res.data || [])
+      .filter(
+        (p) =>
+          p.attributes.domain?.data &&
+          p.attributes.family?.data &&
+          p.attributes.category?.data
+      )
+      .map((p) => ({
+        domainSlug: p.attributes.domain!.data.attributes.slug,
+        familySlug: p.attributes.family!.data.attributes.slug,
+        categorySlug: p.attributes.category!.data.attributes.slug,
+        productSlug: p.attributes.slug,
+      }));
+  } catch (e) {
+    console.warn("Skipping product static generation due to API error:", e);
+    return [];
+  }
 }
