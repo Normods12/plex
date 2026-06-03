@@ -17,6 +17,16 @@
       "required": true,
       "unique": true
     },
+    "brand": {
+      "type": "enumeration",
+      "enum": [
+        "plexonics",
+        "dripx",
+        "milestone"
+      ],
+      "required": true,
+      "default": "plexonics"
+    },
     "slug": {
       "type": "uid",
       "targetField": "name",

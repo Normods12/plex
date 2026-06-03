@@ -4,6 +4,7 @@ import type { Core } from '@strapi/strapi';
 
 // Content types that the Public role should be able to read
 const PUBLIC_READ_CONTENT_TYPES = [
+  // Shared / Plexonics
   'api::product-domain.product-domain',
   'api::product-family.product-family',
   'api::product-category.product-category',
@@ -15,6 +16,12 @@ const PUBLIC_READ_CONTENT_TYPES = [
   'api::navigation-menu.navigation-menu',
   'api::contact-info.contact-info',
   'api::site-settings.site-settings',
+  // DripX
+  'api::solution-page.solution-page',
+  // Milestone
+  'api::ir-document.ir-document',
+  'api::board-member.board-member',
+  'api::project-turnkey.project-turnkey',
 ];
 
 export default {
@@ -32,19 +39,13 @@ export default {
    * run jobs, or perform some special logic.
    */
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
+    // Now start Strapi bootstrap processes
     await setupPublicPermissions(strapi);
+    await backfillBrandFields(strapi);
     // Debug services
     strapi.log.info(`[bootstrap] Available services: ${Object.keys(strapi.services).join(', ')}`);
 
-    const token = await ensureFrontendApiToken(strapi);
-    
-    // Log the token to console for migration scripts
-    if (token) {
-      strapi.log.info(`[bootstrap] API TOKEN FOR SCRIPTS: ${token}`);
-      const outDir = path.join(process.cwd(), 'scripts', 'output');
-      if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
-      fs.writeFileSync(path.join(outDir, 'api-token.txt'), token);
-    }
+    await ensureBrandApiTokens(strapi);
 
     // Auto-seed taxonomy if empty
     const familyCount = await strapi.query('api::product-family.product-family').count();
@@ -256,42 +257,105 @@ async function setupPublicPermissions(strapi: Core.Strapi) {
 }
 
 /**
- * Ensure a "Full Access Token" API token exists.
- * Returns the accessKey.
+ * Ensure 3 brand-specific read-only API tokens exist.
+ * Tokens are written to scripts/output/api-tokens.json on first creation.
  */
-async function ensureFrontendApiToken(strapi: Core.Strapi): Promise<string | null> {
-  const tokenName = 'Full Access Token';
+async function ensureBrandApiTokens(strapi: Core.Strapi): Promise<void> {
+  const BRAND_TOKENS = [
+    {
+      name: 'plexonics-frontend-token',
+      description: 'Read-only API token for Plexonics Next.js frontend',
+    },
+    {
+      name: 'dripx-frontend-token',
+      description: 'Read-only API token for DripX Next.js frontend',
+    },
+    {
+      name: 'milestone-frontend-token',
+      description: 'Read-only API token for Milestone Furniture Next.js frontend',
+    },
+  ];
 
   try {
-    const apiTokenService = strapi.service('admin::api-token-content-api');
-    
+    // Strapi 5 API token service
+    const apiTokenService = strapi.service('admin::api-token');
+
     if (!apiTokenService) {
-      strapi.log.warn('[bootstrap] API Token service not found');
-      return null;
+      strapi.log.warn('[bootstrap] admin::api-token service not found — skipping token creation');
+      return;
     }
 
     const existingTokens = await apiTokenService.list();
-    const existing = existingTokens?.find(
-      (t: { name: string }) => t.name === tokenName
+    const existingNames = new Set(
+      (existingTokens ?? []).map((t: { name: string }) => t.name)
     );
 
-    if (!existing) {
-      const token = await apiTokenService.create({
-        name: tokenName,
-        description: 'Full access token for migration scripts',
-        type: 'full-access',
+    const outDir = path.join(process.cwd(), 'scripts', 'output');
+    if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+
+    const tokensFilePath = path.join(outDir, 'api-tokens.json');
+    const savedTokens: Record<string, string> = fs.existsSync(tokensFilePath)
+      ? JSON.parse(fs.readFileSync(tokensFilePath, 'utf8'))
+      : {};
+
+    let anyCreated = false;
+
+    for (const def of BRAND_TOKENS) {
+      if (existingNames.has(def.name)) {
+        strapi.log.info(`[bootstrap] API token "${def.name}" already exists`);
+        continue;
+      }
+
+      const created = await apiTokenService.create({
+        name: def.name,
+        description: def.description,
+        type: 'read-only',
         lifespan: null,
       });
-      strapi.log.info(`[bootstrap] Created API token: "${tokenName}"`);
-      return token.accessKey;
-    } else {
-      // Strapi doesn't store cleartext key, so we'd need to regenerate it if we lost it.
-      // For now, assume it's set in env if it already exists.
-      strapi.log.info(`[bootstrap] API token "${tokenName}" already exists`);
-      return null;
+
+      savedTokens[def.name] = created.accessKey;
+      strapi.log.info(`[bootstrap] Created API token: "${def.name}" → ${created.accessKey}`);
+      anyCreated = true;
+    }
+
+    if (anyCreated) {
+      fs.writeFileSync(tokensFilePath, JSON.stringify(savedTokens, null, 2));
+      strapi.log.info(`[bootstrap] Brand API tokens saved to scripts/output/api-tokens.json`);
     }
   } catch (err) {
-    strapi.log.warn(`[bootstrap] Could not check/create API token: ${err}`);
-    return null;
+    strapi.log.warn(`[bootstrap] Could not create brand API tokens: ${err}`);
+  }
+}
+
+/**
+ * Backfill brand enum field for existing entries to 'plexonics'.
+ */
+async function backfillBrandFields(strapi: Core.Strapi) {
+  const contentTypes = [
+    'api::product-domain.product-domain',
+    'api::product-family.product-family',
+    'api::product-category.product-category',
+    'api::product.product',
+    'api::page.page',
+    'api::document.document',
+    'api::support-article.support-article',
+    'api::navigation-menu.navigation-menu',
+    'api::site-settings.site-settings',
+    'api::contact-info.contact-info',
+  ];
+
+  for (const uid of contentTypes) {
+    try {
+      const result = await strapi.db.query(uid).updateMany({
+        where: { brand: { $null: true } },
+        data: { brand: 'plexonics' },
+      });
+      const count = (result as { count?: number })?.count ?? 0;
+      if (count > 0) {
+        strapi.log.info(`[bootstrap] Backfilled ${count} entries of ${uid} with brand='plexonics'`);
+      }
+    } catch (err) {
+      strapi.log.error(`[bootstrap] Failed to backfill brand for ${uid}: ${err}`);
+    }
   }
 }

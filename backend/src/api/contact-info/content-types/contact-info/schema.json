@@ -1,5 +1,5 @@
 {
-  "kind": "singleType",
+  "kind": "collectionType",
   "collectionName": "contact_infos",
   "info": {
     "singularName": "contact-info",
@@ -12,6 +12,19 @@
   },
   "pluginOptions": {},
   "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "brand": {
+      "type": "enumeration",
+      "enum": [
+        "plexonics",
+        "dripx",
+        "milestone"
+      ],
+      "required": true,
+      "default": "plexonics"
+    },
     "phone": {
       "type": "string"
     },

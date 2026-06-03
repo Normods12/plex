@@ -440,7 +440,55 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiContactInfoContactInfo extends Struct.SingleTypeSchema {
+export interface ApiBoardMemberBoardMember extends Struct.CollectionTypeSchema {
+  collectionName: 'board_members';
+  info: {
+    description: 'Board of Directors profiles for Milestone Furniture \u2014 required for BSE SME corporate governance disclosure';
+    displayName: 'Board Member';
+    pluralName: 'board-members';
+    singularName: 'board-member';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    bio: Schema.Attribute.Blocks;
+    brand: Schema.Attribute.Enumeration<['plexonics', 'dripx', 'milestone']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'milestone'>;
+    category: Schema.Attribute.Enumeration<
+      ['executive', 'non-executive', 'independent', 'nominee']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'independent'>;
+    committees: Schema.Attribute.JSON;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    designation: Schema.Attribute.String & Schema.Attribute.Required;
+    din: Schema.Attribute.String;
+    experience: Schema.Attribute.Text;
+    joinDate: Schema.Attribute.Date;
+    linkedinUrl: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::board-member.board-member'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    photo: Schema.Attribute.Media<'images'>;
+    publishedAt: Schema.Attribute.DateTime;
+    qualifications: Schema.Attribute.Text;
+    slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
+    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiContactInfoContactInfo extends Struct.CollectionTypeSchema {
   collectionName: 'contact_infos';
   info: {
     description: 'Company contact details displayed site-wide';
@@ -453,6 +501,9 @@ export interface ApiContactInfoContactInfo extends Struct.SingleTypeSchema {
   };
   attributes: {
     address: Schema.Attribute.Text;
+    brand: Schema.Attribute.Enumeration<['plexonics', 'dripx', 'milestone']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'plexonics'>;
     contactFormTarget: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -465,6 +516,7 @@ export interface ApiContactInfoContactInfo extends Struct.SingleTypeSchema {
     > &
       Schema.Attribute.Private;
     mapEmbed: Schema.Attribute.Text;
+    name: Schema.Attribute.String;
     phone: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
@@ -485,6 +537,9 @@ export interface ApiDocumentDocument extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    brand: Schema.Attribute.Enumeration<['plexonics', 'dripx', 'milestone']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'plexonics'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -524,6 +579,63 @@ export interface ApiDocumentDocument extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiIrDocumentIrDocument extends Struct.CollectionTypeSchema {
+  collectionName: 'ir_documents';
+  info: {
+    description: 'Investor Relations documents for BSE SME compliance \u2014 annual reports, filings, disclosures';
+    displayName: 'IR Document';
+    pluralName: 'ir-documents';
+    singularName: 'ir-document';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    brand: Schema.Attribute.Enumeration<['plexonics', 'dripx', 'milestone']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'milestone'>;
+    bseReferenceNo: Schema.Attribute.String;
+    bseSubmissionDate: Schema.Attribute.Date;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    documentType: Schema.Attribute.Enumeration<
+      [
+        'annual-report',
+        'quarterly-report',
+        'shareholding-pattern',
+        'board-meeting-notice',
+        'agm-notice',
+        'egm-notice',
+        'press-release',
+        'disclosure',
+        'corporate-governance',
+        'other',
+      ]
+    > &
+      Schema.Attribute.Required;
+    file: Schema.Attribute.Media<'files'> & Schema.Attribute.Required;
+    financialYear: Schema.Attribute.String & Schema.Attribute.Required;
+    isHighlighted: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ir-document.ir-document'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    publishedDate: Schema.Attribute.Date & Schema.Attribute.Required;
+    quarter: Schema.Attribute.Enumeration<['Q1', 'Q2', 'Q3', 'Q4']>;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiNavigationMenuNavigationMenu
   extends Struct.SingleTypeSchema {
   collectionName: 'navigation_menus';
@@ -537,6 +649,9 @@ export interface ApiNavigationMenuNavigationMenu
     draftAndPublish: true;
   };
   attributes: {
+    brand: Schema.Attribute.Enumeration<['plexonics', 'dripx', 'milestone']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'plexonics'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -567,6 +682,9 @@ export interface ApiPagePage extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    brand: Schema.Attribute.Enumeration<['plexonics', 'dripx', 'milestone']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'plexonics'>;
     content: Schema.Attribute.Blocks;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -602,6 +720,9 @@ export interface ApiProductCategoryProductCategory
     draftAndPublish: true;
   };
   attributes: {
+    brand: Schema.Attribute.Enumeration<['plexonics', 'dripx', 'milestone']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'plexonics'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -641,6 +762,9 @@ export interface ApiProductDomainProductDomain
     draftAndPublish: true;
   };
   attributes: {
+    brand: Schema.Attribute.Enumeration<['plexonics', 'dripx', 'milestone']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'plexonics'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -682,6 +806,9 @@ export interface ApiProductFamilyProductFamily
     draftAndPublish: true;
   };
   attributes: {
+    brand: Schema.Attribute.Enumeration<['plexonics', 'dripx', 'milestone']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'plexonics'>;
     categories: Schema.Attribute.Relation<
       'oneToMany',
       'api::product-category.product-category'
@@ -769,10 +896,14 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
   };
   attributes: {
     applications: Schema.Attribute.Blocks;
+    brand: Schema.Attribute.Enumeration<['plexonics', 'dripx', 'milestone']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'plexonics'>;
     category: Schema.Attribute.Relation<
       'manyToOne',
       'api::product-category.product-category'
     >;
+    certifications: Schema.Attribute.JSON;
     compliance: Schema.Attribute.JSON;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -801,6 +932,9 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     longDescription: Schema.Attribute.Blocks;
+    machineType: Schema.Attribute.Enumeration<
+      ['turning-centre', 'vmc', 'turn-mill']
+    >;
     mainImage: Schema.Attribute.Media<'images'>;
     manuals: Schema.Attribute.Relation<'manyToMany', 'api::document.document'>;
     modelCode: Schema.Attribute.String;
@@ -819,10 +953,83 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
     software: Schema.Attribute.Relation<'manyToMany', 'api::document.document'>;
     specs: Schema.Attribute.Component<'product.spec-item', true>;
+    spindleSpeed: Schema.Attribute.String;
     status: Schema.Attribute.Enumeration<['active', 'legacy', 'discontinued']> &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'active'>;
     tags: Schema.Attribute.JSON;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    videoUrl: Schema.Attribute.String;
+    xTravel: Schema.Attribute.String;
+    yTravel: Schema.Attribute.String;
+    zTravel: Schema.Attribute.String;
+  };
+}
+
+export interface ApiProjectTurnkeyProjectTurnkey
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'project_turnkeys';
+  info: {
+    description: 'Milestone Furniture completed project showcases \u2014 residential, commercial, hospitality installs';
+    displayName: 'Project Turnkey';
+    pluralName: 'project-turnkeys';
+    singularName: 'project-turnkey';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    area: Schema.Attribute.String;
+    brand: Schema.Attribute.Enumeration<['plexonics', 'dripx', 'milestone']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'milestone'>;
+    challenge: Schema.Attribute.Text;
+    city: Schema.Attribute.String;
+    clientName: Schema.Attribute.String;
+    completionDate: Schema.Attribute.Date;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Blocks;
+    featuredProducts: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::product.product'
+    >;
+    gallery: Schema.Attribute.Media<'images', true>;
+    heroImage: Schema.Attribute.Media<'images'>;
+    isHighlighted: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::project-turnkey.project-turnkey'
+    > &
+      Schema.Attribute.Private;
+    location: Schema.Attribute.String;
+    projectType: Schema.Attribute.Enumeration<
+      [
+        'residential',
+        'commercial',
+        'hospitality',
+        'office',
+        'retail',
+        'institutional',
+        'other',
+      ]
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'commercial'>;
+    publishedAt: Schema.Attribute.DateTime;
+    seo: Schema.Attribute.Component<'shared.seo', false>;
+    shortDescription: Schema.Attribute.Text;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    solution: Schema.Attribute.Text;
+    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    testimonialAuthor: Schema.Attribute.String;
+    testimonialDesignation: Schema.Attribute.String;
+    testimonialQuote: Schema.Attribute.Text;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -842,6 +1049,9 @@ export interface ApiSiteSettingsSiteSettings extends Struct.SingleTypeSchema {
   };
   attributes: {
     alertBanner: Schema.Attribute.Component<'shared.alert-banner', false>;
+    brand: Schema.Attribute.Enumeration<['plexonics', 'dripx', 'milestone']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'plexonics'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -864,6 +1074,53 @@ export interface ApiSiteSettingsSiteSettings extends Struct.SingleTypeSchema {
   };
 }
 
+export interface ApiSolutionPageSolutionPage
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'solution_pages';
+  info: {
+    description: 'DripX industry solution pages showcasing CNC applications by sector';
+    displayName: 'Solution Page';
+    pluralName: 'solution-pages';
+    singularName: 'solution-page';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    brand: Schema.Attribute.Enumeration<['plexonics', 'dripx', 'milestone']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'dripx'>;
+    caseStudyUrl: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Blocks;
+    featuredProducts: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::product.product'
+    >;
+    headline: Schema.Attribute.String;
+    heroImage: Schema.Attribute.Media<'images'>;
+    industry: Schema.Attribute.String & Schema.Attribute.Required;
+    keyBenefits: Schema.Attribute.Component<'product.feature-item', true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::solution-page.solution-page'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    seo: Schema.Attribute.Component<'shared.seo', false>;
+    shortDescription: Schema.Attribute.Text;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiSupportArticleSupportArticle
   extends Struct.CollectionTypeSchema {
   collectionName: 'support_articles';
@@ -878,6 +1135,9 @@ export interface ApiSupportArticleSupportArticle
   };
   attributes: {
     attachments: Schema.Attribute.Media<'files' | 'images', true>;
+    brand: Schema.Attribute.Enumeration<['plexonics', 'dripx', 'milestone']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'plexonics'>;
     category: Schema.Attribute.Enumeration<
       ['glossary', 'technology', 'warranty', 'registration', 'other']
     > &
@@ -1413,8 +1673,10 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::board-member.board-member': ApiBoardMemberBoardMember;
       'api::contact-info.contact-info': ApiContactInfoContactInfo;
       'api::document.document': ApiDocumentDocument;
+      'api::ir-document.ir-document': ApiIrDocumentIrDocument;
       'api::navigation-menu.navigation-menu': ApiNavigationMenuNavigationMenu;
       'api::page.page': ApiPagePage;
       'api::product-category.product-category': ApiProductCategoryProductCategory;
@@ -1422,7 +1684,9 @@ declare module '@strapi/strapi' {
       'api::product-family.product-family': ApiProductFamilyProductFamily;
       'api::product-series.product-series': ApiProductSeriesProductSeries;
       'api::product.product': ApiProductProduct;
+      'api::project-turnkey.project-turnkey': ApiProjectTurnkeyProjectTurnkey;
       'api::site-settings.site-settings': ApiSiteSettingsSiteSettings;
+      'api::solution-page.solution-page': ApiSolutionPageSolutionPage;
       'api::support-article.support-article': ApiSupportArticleSupportArticle;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;

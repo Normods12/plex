@@ -12,6 +12,16 @@
   },
   "pluginOptions": {},
   "attributes": {
+    "brand": {
+      "type": "enumeration",
+      "enum": [
+        "plexonics",
+        "dripx",
+        "milestone"
+      ],
+      "required": true,
+      "default": "plexonics"
+    },
     "siteName": {
       "type": "string"
     },

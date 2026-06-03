@@ -1,0 +1,72 @@
+{
+  "kind": "collectionType",
+  "collectionName": "solution_pages",
+  "info": {
+    "singularName": "solution-page",
+    "pluralName": "solution-pages",
+    "displayName": "Solution Page",
+    "description": "DripX industry solution pages showcasing CNC applications by sector"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "brand": {
+      "type": "enumeration",
+      "enum": ["plexonics", "dripx", "milestone"],
+      "required": true,
+      "default": "dripx"
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "industry": {
+      "type": "string",
+      "required": true
+    },
+    "headline": {
+      "type": "string"
+    },
+    "shortDescription": {
+      "type": "text"
+    },
+    "description": {
+      "type": "blocks"
+    },
+    "heroImage": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "keyBenefits": {
+      "type": "component",
+      "repeatable": true,
+      "component": "product.feature-item"
+    },
+    "featuredProducts": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::product.product"
+    },
+    "caseStudyUrl": {
+      "type": "string"
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0
+    },
+    "seo": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.seo"
+    }
+  }
+}

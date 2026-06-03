@@ -42,6 +42,7 @@ export default async function CategoryPage({ params }: Props) {
   ]);
 
   if (!category) notFound();
+  const cat = category!;
 
   return (
     <div>
@@ -61,12 +62,12 @@ export default async function CategoryPage({ params }: Props) {
               {family?.attributes.name ?? params.familySlug}
             </Link>
             <span className="mx-2">›</span>
-            <span className="text-white">{category.attributes.name}</span>
+            <span className="text-white">{cat.attributes.name}</span>
           </nav>
-          <h1 className="text-4xl font-bold text-white">{category.attributes.name}</h1>
-          {category.attributes.shortDescription && (
+          <h1 className="text-4xl font-bold text-white">{cat.attributes.name}</h1>
+          {cat.attributes.shortDescription && (
             <p className="text-gray-300 mt-2 max-w-2xl">
-              {category.attributes.shortDescription}
+              {cat.attributes.shortDescription}
             </p>
           )}
         </div>

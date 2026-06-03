@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 const path = require('path');
-const envPath = path.join(__dirname, '..', '.env');
+// Load from backend/.env (same directory as this file)
+const envPath = path.join(__dirname, '.env');
 
 // IMPORTANT: Change working directory to the backend folder
 // This ensures Strapi 5 finds the local public/uploads directory correctly

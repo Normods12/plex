@@ -1,0 +1,111 @@
+{
+  "kind": "collectionType",
+  "collectionName": "project_turnkeys",
+  "info": {
+    "singularName": "project-turnkey",
+    "pluralName": "project-turnkeys",
+    "displayName": "Project Turnkey",
+    "description": "Milestone Furniture completed project showcases — residential, commercial, hospitality installs"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "brand": {
+      "type": "enumeration",
+      "enum": ["plexonics", "dripx", "milestone"],
+      "required": true,
+      "default": "milestone"
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "projectType": {
+      "type": "enumeration",
+      "enum": [
+        "residential",
+        "commercial",
+        "hospitality",
+        "office",
+        "retail",
+        "institutional",
+        "other"
+      ],
+      "required": true,
+      "default": "commercial"
+    },
+    "clientName": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "completionDate": {
+      "type": "date"
+    },
+    "area": {
+      "type": "string"
+    },
+    "shortDescription": {
+      "type": "text"
+    },
+    "description": {
+      "type": "blocks"
+    },
+    "challenge": {
+      "type": "text"
+    },
+    "solution": {
+      "type": "text"
+    },
+    "heroImage": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "gallery": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "featuredProducts": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::product.product"
+    },
+    "testimonialQuote": {
+      "type": "text"
+    },
+    "testimonialAuthor": {
+      "type": "string"
+    },
+    "testimonialDesignation": {
+      "type": "string"
+    },
+    "isHighlighted": {
+      "type": "boolean",
+      "default": false
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0
+    },
+    "seo": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.seo"
+    }
+  }
+}

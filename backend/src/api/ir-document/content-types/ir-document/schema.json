@@ -1,0 +1,83 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ir_documents",
+  "info": {
+    "singularName": "ir-document",
+    "pluralName": "ir-documents",
+    "displayName": "IR Document",
+    "description": "Investor Relations documents for BSE SME compliance — annual reports, filings, disclosures"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "brand": {
+      "type": "enumeration",
+      "enum": ["plexonics", "dripx", "milestone"],
+      "required": true,
+      "default": "milestone"
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "documentType": {
+      "type": "enumeration",
+      "enum": [
+        "annual-report",
+        "quarterly-report",
+        "shareholding-pattern",
+        "board-meeting-notice",
+        "agm-notice",
+        "egm-notice",
+        "press-release",
+        "disclosure",
+        "corporate-governance",
+        "other"
+      ],
+      "required": true
+    },
+    "financialYear": {
+      "type": "string",
+      "required": true
+    },
+    "quarter": {
+      "type": "enumeration",
+      "enum": ["Q1", "Q2", "Q3", "Q4"],
+      "required": false
+    },
+    "description": {
+      "type": "text"
+    },
+    "file": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": ["files"]
+    },
+    "publishedDate": {
+      "type": "date",
+      "required": true
+    },
+    "bseSubmissionDate": {
+      "type": "date"
+    },
+    "bseReferenceNo": {
+      "type": "string"
+    },
+    "isHighlighted": {
+      "type": "boolean",
+      "default": false
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}

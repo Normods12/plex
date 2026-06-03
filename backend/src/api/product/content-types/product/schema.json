@@ -16,6 +16,16 @@
       "type": "string",
       "required": true
     },
+    "brand": {
+      "type": "enumeration",
+      "enum": [
+        "plexonics",
+        "dripx",
+        "milestone"
+      ],
+      "required": true,
+      "default": "plexonics"
+    },
     "modelCode": {
       "type": "string"
     },
@@ -124,6 +134,35 @@
       "type": "component",
       "repeatable": false,
       "component": "shared.seo"
+    },
+    "machineType": {
+      "type": "enumeration",
+      "enum": ["turning-centre", "vmc", "turn-mill"],
+      "required": false
+    },
+    "xTravel": {
+      "type": "string",
+      "required": false
+    },
+    "yTravel": {
+      "type": "string",
+      "required": false
+    },
+    "zTravel": {
+      "type": "string",
+      "required": false
+    },
+    "spindleSpeed": {
+      "type": "string",
+      "required": false
+    },
+    "videoUrl": {
+      "type": "string",
+      "required": false
+    },
+    "certifications": {
+      "type": "json",
+      "required": false
     }
   }
 }

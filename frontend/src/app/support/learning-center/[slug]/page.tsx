@@ -61,8 +61,9 @@ export default async function LearningCenterArticlePage({
 }) {
   const article = await getArticle(params.slug);
   if (!article) notFound();
+  const a = article!;
 
-  const attachments = article.attributes.attachments?.data ?? [];
+  const attachments = a.attributes.attachments?.data ?? [];
 
   return (
     <div>
@@ -78,21 +79,21 @@ export default async function LearningCenterArticlePage({
               Learning Center
             </Link>
             <span className="mx-2">›</span>
-            <span className="text-white">{article.attributes.title}</span>
+            <span className="text-white">{a.attributes.title}</span>
           </nav>
           <div className="flex items-center gap-3 mb-2">
             <span className="text-xs font-bold uppercase tracking-wider bg-brand-red text-white px-2 py-0.5 rounded-sm">
-              {article.attributes.category}
+              {a.attributes.category}
             </span>
           </div>
-          <h1 className="text-4xl font-bold text-white">{article.attributes.title}</h1>
+          <h1 className="text-4xl font-bold text-white">{a.attributes.title}</h1>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Content */}
         <div className="prose prose-lg max-w-none text-ui-charcoal mb-10">
-          <RichTextContent content={article.attributes.content} />
+          <RichTextContent content={a.attributes.content} />
         </div>
 
         {/* Attachments */}
